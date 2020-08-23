@@ -1,0 +1,7 @@
+The binary package contains the following files:
+
+ANNOUNCE   the software announcement
+README     this file
+track.ps   the program manual and literate source code
+track	   the Linux binary
+songs/*    various chord chards (mostly jazz standards)
