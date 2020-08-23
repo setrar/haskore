@@ -1,0 +1,253 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+<meta name="robots" content="noindex,nofollow">
+
+
+<script type="text/javascript">
+var timeout_min = 10;
+var state = 0; // 0: start; 1: long count; 2: short count; 3: timeout; 4/5: blink
+var counter = 0, step = 1, delay = 1;
+
+function countdown() {
+    // change state if counter is down
+    if (counter <= 1) {
+        state += 1
+        if (state == 1) {
+            counter = timeout_min
+            step = 1
+            delay = 60000
+        }
+        if (state == 2) {
+            counter = 60
+            step = 5
+            delay = step * 1000
+        }
+        if (state == 3 || state == 5) {
+            window.status = "Ihre Sperre der Seite Haskore ist abgelaufen!"
+            state = 3
+            counter = 1
+            step = 1
+            delay = 500
+        }
+        if (state == 4) {
+            // blink the above text
+            window.status = " "
+            counter = 1
+            delay = 250
+        }
+    }
+
+    // display changes
+    if (state < 3) {
+        var msg
+        if (state == 1) msg = "Ihre Sperre der Seite Haskore läuft in # Minuten ab."
+        if (state == 2) msg = "Ihre Sperre der Seite Haskore läuft in # Sekunden ab."
+        window.status = msg.replace(/#/, counter)
+    }
+    counter -= step
+
+    // Set timer for next update
+    setTimeout("countdown()", delay)
+}
+</script>
+
+
+<title>Vorschau für "Haskore" - The Haskell Wiki</title>
+<link rel="stylesheet" type="text/css" charset="iso-8859-1" media="all" href="https://archives.haskell.org/moinwiki/classic/css/common.css">
+<link rel="stylesheet" type="text/css" charset="iso-8859-1" media="screen" href="https://archives.haskell.org/moinwiki/classic/css/screen.css">
+<link rel="stylesheet" type="text/css" charset="iso-8859-1" media="print" href="https://archives.haskell.org/moinwiki/classic/css/print.css">
+
+
+<link rel="Start" href="https://archives.haskell.org/hawiki/StartSeite">
+<link rel="Alternate" title="Wiki Quelltext" href="https://archives.haskell.org/hawiki/Haskore?action=raw">
+<link rel="Alternate" media="print" title="Druckansicht" href="https://archives.haskell.org/hawiki/Haskore?action=print">
+<link rel="Search" href="https://archives.haskell.org/hawiki/SeiteFinden">
+<link rel="Index" href="https://archives.haskell.org/hawiki/TitelIndex">
+<link rel="Glossary" href="https://archives.haskell.org/hawiki/WortIndex">
+<link rel="Help" href="https://archives.haskell.org/hawiki/HilfeZumFormatieren">
+</head>
+
+<body lang="de" dir="ltr" onload="countdown()">
+
+
+<div id="logo"><a href="https://archives.haskell.org/hawiki/StartSeite"><img src="https://archives.haskell.org/small-lambda.gif" alt="The Haskell Wiki"></a></div>
+<div id="username"><a href="https://archives.haskell.org/hawiki/BenutzerEinstellungen">BenutzerEinstellungen</a></div>
+<div id="title"><h1>Vorschau für "Haskore"</h1></div>
+<ul id="iconbar">
+<li><a title="Editieren" href="https://archives.haskell.org/hawiki/Haskore?action=edit"><img src="https://archives.haskell.org/moinwiki/classic/img/moin-edit.png" alt="Editieren" height="12" width="12"></a></li>
+<li><a title="Anzeigen" href="https://archives.haskell.org/hawiki/Haskore"><img src="https://archives.haskell.org/moinwiki/classic/img/moin-show.png" alt="Anzeigen" height="13" width="12"></a></li>
+<li><a title="DifferenzAnzeige" href="https://archives.haskell.org/hawiki/Haskore?action=diff"><img src="https://archives.haskell.org/moinwiki/classic/img/moin-diff.png" alt="DifferenzAnzeige" height="11" width="15"></a></li>
+<li><a title="Info" href="https://archives.haskell.org/hawiki/Haskore?action=info"><img src="https://archives.haskell.org/moinwiki/classic/img/moin-info.png" alt="Info" height="11" width="12"></a></li>
+<li><a title="Abonnieren" href="https://archives.haskell.org/hawiki/Haskore?action=subscribe"><img src="https://archives.haskell.org/moinwiki/classic/img/moin-subscribe.png" alt="Abonnieren" height="10" width="14"></a></li>
+<li><a title="Rohform" href="https://archives.haskell.org/hawiki/Haskore?action=raw"><img src="https://archives.haskell.org/moinwiki/classic/img/moin-raw.png" alt="Rohform" height="13" width="12"></a></li>
+<li><a title="Druckansicht" href="https://archives.haskell.org/hawiki/Haskore?action=print"><img src="https://archives.haskell.org/moinwiki/classic/img/moin-print.png" alt="Druckansicht" height="14" width="16"></a></li>
+</ul>
+
+<ul id="navibar">
+<li><a href="https://archives.haskell.org/hawiki/StartSeite">StartSeite</a></li>
+<li><a href="https://archives.haskell.org/hawiki/Aktuelle_c4nderungen">AktuelleÄnderungen</a></li>
+<li><a href="https://archives.haskell.org/hawiki/SeiteFinden">SeiteFinden</a></li>
+<li><a href="https://archives.haskell.org/hawiki/HilfeInhalt">HilfeInhalt</a></li>
+</ul>
+<hr id="pagetrail">
+
+
+
+<div id="message">Andere Benutzer erhalten bis 2004-08-20 15:33:19 eine <em>Warnung</em>, dass Sie diese Seite editieren.
+Mit "Vorschau anzeigen" können Sie diesen Zeitraum verlängern.</div><p><a href="https://archives.haskell.org/code.haskell.org/haskore/revised/core/src/Notes/Haskore?action=edit&amp;rows=10&amp;cols=60">Größe des Eingabefelds reduzieren</a> | <a href="https://archives.haskell.org/hawiki/HilfeZumFormatieren">HilfeZumFormatieren</a> | <a href="https://archives.haskell.org/hawiki/InterWiki">InterWiki</a> | <a href="#preview">Zur Vorschau springen</a> [aktuelle Seitengröße <strong>2158</strong> Bytes]</p><form method="post" action="https://archives.haskell.org/hawiki/Haskore#preview"><p><input type="hidden" name="action" value="savepage"><input type="hidden" name="datestamp" value="0"><textarea name="savetext" rows="20" cols="80" style="width:100%">[http://www.haskell.org/haskore/ Haskore] is a set of Haskell modules for creating music as MIDI, CSound, and Audio files.
+
+A lot of projects were initiated that use the Haskore framework or something in the spirit of Haskore. This Wiki may help to keep an overview of all projects. All maintainers of Haskore related projects are encouraged to add there project here.
+
+
+|| AuDi || Peter Steffen || [http://www.techfak.uni-bielefeld.de/ags/pi/lehre/AuDIWS02/musik/] || Course material for Algorithms and Data Structures I - A formula language for music ("Algorithmen und Datenstrukturen I - Eine Formelsprache fuer Musik") ||
+|| AutoTrack || Stefan Ratschan || [http://www.mpi-sb.mpg.de/~ratschan/autotrack/] || A tool for creating practizing and demo tracks from chord charts.  You feed the program with a chord chart, set the desired style (jazz, bossa, etc.), tempo, key etc. and it produces a simple MIDI file containing an according bass and drum track. Includes a lot of examples. ||
+|| EDSL || John Peterson || [http://haskell.cs.yale.edu/edsl/music.htm] || Educational Domain Specific Languages ||
+|| Emile || Adam Bermingham ||  || Eight-Bar Melody Generation in Haskell. Automatic composition based on two initial bars ||
+|| Gore || Johannes Waldmann || [http://www.imn.htwk-leipzig.de/~waldmann/] || Convert a melody description in a string into the Haskore Music data structure. Thus simple melodies can be written much more condensed. ||
+|| HasChorus || Martin Schwenke || [http://meltin.net/hacks/haskell/] || A set of Haskell modules written on top of Haskore to make it easier to sequence simple, repetitive music ||
+|| Jazkore || Jean-François Paiement || [http://www.idiap.ch/~paiement/] ? || A model of melodic jazz improvisation in functional programming ||
+|| Lilypond back-end || Jeffrey R. Lewis ||  || A back-end for Haskore to produce Lilypond notation files. ||
+|| Polymorphic Temporal Media || Paul Hudak || [http://haskell.cs.yale.edu/yale/papers/polymedia/hudak-RR-1259.pdf] || An Algebraic Theory of Polymorphic Temporal Media - A generalization of Haskore Music and MDL as well as Fran and FAL animation ||
+
+----
+CategoryTools
+</textarea></p><p>Optionaler Kommentar zu dieser Änderung<br><input type="text" name="comment" value="" size="80" maxlength="80" style="width:100%"></p><p>Diese Seite zur folgenden Kategorie hinzufügen: <select name="category"><option value="">&lt;Keine Änderung&gt;</option><option value="CategoryCategory">CategoryCategory</option><option value="CategoryCodeSnippet">CategoryCodeSnippet</option><option value="CategoryGlossary">CategoryGlossary</option><option value="CategoryHaskellImplementations">CategoryHaskellImplementations</option><option value="CategoryHomepage">CategoryHomepage</option><option value="CategoryIdiom">CategoryIdiom</option><option value="CategoryMonad">CategoryMonad</option><option value="CategoryRefactoring">CategoryRefactoring</option><option value="CategoryTheory">CategoryTheory</option><option value="CategoryTheory/Functor">CategoryTheory/Functor</option><option value="CategoryTheory/NaturalTransformation">CategoryTheory/NaturalTransformation</option><option value="CategoryTools">CategoryTools</option><option value="CategoryTutorial">CategoryTutorial</option></select></p>
+<p>
+<input type="submit" name="button_save" value="Änderungen speichern">
+<input type="submit" name="button_preview" value="Vorschau anzeigen"> <input type="submit" name="button_spellcheck" value="Rechtschreibung prüfen">
+<input type="submit" name="button_cancel" value="Abbrechen">
+</p>
+<p>
+
+<input type="checkbox" name="rstrip" value="1">
+<label>Leerzeichen am Ende jeder Zeile entfernen</label>
+</p>
+</form><hr>
+<dl><dt>Betonung:</dt>
+<dd>''<em>kursiv</em>''; '''<strong>fett</strong>'''; '''''<strong><em>fett und kursiv</em></strong>''''';
+    ''<em>gemischt '''<strong>fett</strong>''' und kursiv</em>''; ---- horizontaler Balken.</dd>
+<dt>Überschriften:</dt>
+<dd>= Überschrift 1 =; == Überschrift 2 ==; === Ü 3 ===;
+    ==== Ü 4 ====; ===== Ü 5 =====.</dd>
+<dt>Listen:</dt>
+<dd>Leerzeichen und eins von: * Punkte; 1., a., A., i., I. numerierte Punkte;
+    1.#n starte Numerierung bei n; nur Leerzeichen rückt ein.</dd>
+<dt>Links:</dt>
+<dd>ZusammenGeschriebeneGroßeWorte; ["Klammern und doppelte Anführungszeichen"];
+    url; [url]; [url label].</dd>
+<dt>Tabellen:</dt>
+<dd>|| Zellentext |||| Zellentext, 2 Zellen überspannend ||;
+    keine anhängenden Leerzeichen nach Überschriften oder Tabellen.</dd>
+</dl><div id="preview"><div id="content" lang="en" dir="ltr">
+<p>
+<a class="external" href="http://www.haskell.org/haskore/"><img src="https://archives.haskell.org/moinwiki/classic/img/moin-www.png" alt="[WWW]" height="11" width="11">Haskore</a> is a set of Haskell modules for creating music as MIDI, CSound, and Audio files. 
+</p>
+<p>
+A lot of projects were initiated that use the Haskore framework or something in the spirit of Haskore. This Wiki may help to keep an overview of all projects. All maintainers of Haskore related projects are encouraged to add there project here. 
+</p>
+
+<div>
+<table>
+<tr>
+<td>
+ <a class="nonexistent" href="https://archives.haskell.org/hawiki/AuDi">?</a>AuDi </td>
+<td>
+ Peter Steffen </td>
+<td>
+ <a class="external" href="http://www.techfak.uni-bielefeld.de/ags/pi/lehre/AuDIWS02/musik/"><img src="https://archives.haskell.org/moinwiki/classic/img/moin-www.png" alt="[WWW]" height="11" width="11">http://www.techfak.uni-bielefeld.de/ags/pi/lehre/AuDIWS02/musik/</a> </td>
+<td>
+ Course material for Algorithms and Data Structures I - A formula language for music ("Algorithmen und Datenstrukturen I - Eine Formelsprache fuer Musik") </td>
+</tr>
+<tr>
+<td>
+ <a class="nonexistent" href="https://archives.haskell.org/hawiki/AutoTrack">?</a>AutoTrack </td>
+<td>
+ Stefan Ratschan </td>
+<td>
+ <a class="external" href="http://www.mpi-sb.mpg.de/~ratschan/autotrack/"><img src="https://archives.haskell.org/moinwiki/classic/img/moin-www.png" alt="[WWW]" height="11" width="11">http://www.mpi-sb.mpg.de/~ratschan/autotrack/</a> </td>
+<td>
+ A tool for creating practizing and demo tracks from chord charts.  You feed the program with a chord chart, set the desired style (jazz, bossa, etc.), tempo, key etc. and it produces a simple MIDI file containing an according bass and drum track. Includes a lot of examples. </td>
+</tr>
+<tr>
+<td>
+ EDSL </td>
+<td>
+ John Peterson </td>
+<td>
+ <a class="external" href="http://haskell.cs.yale.edu/edsl/music.htm"><img src="https://archives.haskell.org/moinwiki/classic/img/moin-www.png" alt="[WWW]" height="11" width="11">http://haskell.cs.yale.edu/edsl/music.htm</a> </td>
+<td>
+ Educational Domain Specific Languages </td>
+</tr>
+<tr>
+<td>
+ Emile </td>
+<td>
+ Adam Bermingham </td>
+<td>
+  </td>
+<td>
+ Eight-Bar Melody Generation in Haskell. Automatic composition based on two initial bars </td>
+</tr>
+<tr>
+<td>
+ Gore </td>
+<td>
+ Johannes Waldmann </td>
+<td>
+ <a class="external" href="http://www.imn.htwk-leipzig.de/~waldmann/"><img src="https://archives.haskell.org/moinwiki/classic/img/moin-www.png" alt="[WWW]" height="11" width="11">http://www.imn.htwk-leipzig.de/~waldmann/</a> </td>
+<td>
+ Convert a melody description in a string into the Haskore Music data structure. Thus simple melodies can be written much more condensed. </td>
+</tr>
+<tr>
+<td>
+ <a class="nonexistent" href="https://archives.haskell.org/hawiki/HasChorus">?</a>HasChorus </td>
+<td>
+ Martin Schwenke </td>
+<td>
+ <a class="external" href="http://meltin.net/hacks/haskell/"><img src="https://archives.haskell.org/moinwiki/classic/img/moin-www.png" alt="[WWW]" height="11" width="11">http://meltin.net/hacks/haskell/</a> </td>
+<td>
+ A set of Haskell modules written on top of Haskore to make it easier to sequence simple, repetitive music </td>
+</tr>
+<tr>
+<td>
+ Jazkore </td>
+<td>
+ Jean-François Paiement </td>
+<td>
+ <a class="external" href="http://www.idiap.ch/~paiement/"><img src="https://archives.haskell.org/moinwiki/classic/img/moin-www.png" alt="[WWW]" height="11" width="11">http://www.idiap.ch/~paiement/</a> ? </td>
+<td>
+ A model of melodic jazz improvisation in functional programming </td>
+</tr>
+<tr>
+<td>
+ Lilypond back-end </td>
+<td>
+ Jeffrey R. Lewis </td>
+<td>
+  </td>
+<td>
+ A back-end for Haskore to produce Lilypond notation files. </td>
+</tr>
+<tr>
+<td>
+ Polymorphic Temporal Media </td>
+<td>
+ Paul Hudak </td>
+<td>
+ <a class="external" href="http://haskell.cs.yale.edu/yale/papers/polymedia/hudak-RR-1259.pdf"><img src="https://archives.haskell.org/moinwiki/classic/img/moin-www.png" alt="[WWW]" height="11" width="11">http://haskell.cs.yale.edu/yale/papers/polymedia/hudak-RR-1259.pdf</a> </td>
+<td>
+ An Algebraic Theory of Polymorphic Temporal Media - A generalization of Haskore Music and MDL as well as Fran and FAL animation </td>
+</tr>
+</table>
+</div>
+<hr>
+ <p>
+<a href="https://archives.haskell.org/hawiki/CategoryTools">CategoryTools</a> 
+</p>
+</div>
+</div></body>
+</html>
+

@@ -1,0 +1,85 @@
+\begin{hcarentry}[updated]{Haskore revision}
+\label{haskore}
+\report{Henning Thielemann}%05/08
+\participants{Paul Hudak}
+\status{experimental, active development}
+\makeheader
+
+Haskore is a Haskell library originally written by Paul Hudak
+that allows music composition within Haskell,
+i.e., without the need of a custom music programming language.
+This collaborative project aims at
+improving consistency, adding extensions, revising design decisions,
+and fixing bugs.
+Specific improvements include:
+\begin{enumerate}
+\item The \texttt{Music} data type has been generalised in the style of
+  Hudak's ``polymorphic temporal media.''
+  It has been made abstract
+  by providing functions that operate on it.
+
+\item The notion of instruments is now very general.
+  There are simple predefined instances of the \texttt{Music} data type,
+  where instruments are identified by names or General MIDI instrument identifiers,
+  but any other custom type is possible,
+  including types with instrument specific parameters.
+
+\item Creation of CSound orchestra files in a functional style,
+  including feedback and signal processors with multiple outputs.
+
+\item Support for the software synthesiser SuperCollider
+  both in real-time and non-real-time mode
+  through the Haskell interface by Rohan Drape.
+
+\item Conversion between MIDI file and Haskore representation of Music.
+  Real-time MIDI is supported via ALSA on Linux.
+%   The MIDI file management has been moved to a separate package
+%   \url{http://darcs.haskell.org/midi/}.
+%   Also, a package for real-time input and output of MIDI events
+%   through ALSA is now available:
+%   \url{http://darcs.haskell.org/alsa-midi/}.
+
+\item A package for lists of events with time information has been factored out,
+  as well as a package for non-negative numbers,
+  which occur as time differences in event lists.
+
+% \item The AutoTrack project has been adapted and included.
+
+\item Support for infinite \texttt{Music} objects is improved.
+  CSound may be fed with infinite music data through a pipe, and
+  an audio file player like Sox can be fed with an audio stream
+  entirely rendered in Haskell.
+  (See Audio Signal Processing project~\cref{audiosp}.)
+
+% \item The test suite is based on QuickCheck and HUnit.
+\end{enumerate}
+
+
+\FuturePlans
+
+\begin{compactitem}
+\item There is an ongoing effort by Paul Hudak
+to rewrite Haskore in order to meet educational requirements.
+\end{compactitem}
+
+% \begin{compactitem}
+% \item Allow modulation of instruments similar to the controllers in the MIDI % system.
+%    We are currently overhauling the design,
+%    such that effects on the music level
+%    and effects on the back-end level (MIDI, CSound, SuperCollider, % Haskell-Synthesizer)
+%    are cleanly separated.
+% \item Split into a core package and add-ons, as soon as Cabal supports that.
+% \item Generate note sheets, say, via Lilypond.
+% \item Connect to other Haskore related projects.
+% \item Microtonal music.
+% % (see: Magnus Jonsson: Haskore microtonal support
+% %  \url{http://www.haskell.org/pipermail/haskell-cafe/2006-September/018144.html}).
+% \end{compactitem}
+
+
+\FurtherReading
+\begin{compactitem}
+\item \url{http://www.haskell.org/haskellwiki/Haskore}
+% \item \url{http://darcs.haskell.org/haskore/}
+\end{compactitem}
+\end{hcarentry}

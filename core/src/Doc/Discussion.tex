@@ -1,0 +1,301 @@
+\section{Design discussion}
+
+This section presents the advantages and disadvantages
+of several design decisions that has been made.
+
+\paragraph*{Principal type \code{T}}
+
+Analogously to Modula-3 we use the following naming scheme:
+A module has the name of the principal type
+and the type itself has the name \code{T}.
+If there is only one constructor for that type its name is \code{Cons}.
+If the main object of a module is a type class, its name is \code{C}.
+A function in a module don't need a prefix related to the principal type.
+Many functions can be considered as conversion functions.
+They should be named \code{TargetType.fromSourceType}
+or \code{SourceType.toTargetType}.
+If there is a choice, the first form is prefered.
+This does better fit to the order of functions and their arguments.
+Compare \code{a = A.fromB b} and \code{a = B.toA b}.
+
+A programmer using such a module is encouraged
+to import it with qualified identifiers.
+This way the programmer may abbreviate the module name to its convenience.
+
+\paragraph*{\code{Music.T}}
+
+The data structure should be hidden.
+The user should use \code{changeTempo} and similar functions
+instead of the constructors \code{Tempo} etc.
+This way the definition of a \code{Music.T}
+stays independent from the actual data structure \code{Music.T}.
+Then \code{changeTempo} can be implemented silently
+using a constructor or using a mapping function.
+
+\paragraph*{\code{Medium.T}}
+
+\seclabel{discussion:media}
+
+The idea of extracting the structure of animation movies and music
+into an abstract data structure is taken from Paul Hudak's paper
+``An Algebraic Theory of Polymorphic Temporal Media''.
+
+The temporial media data structure \code{Medium.T}
+is used here as the basis type for Haskore's Music.
+
+\subparagraph*{Binary composition vs. List composition}
+
+There are two natural representations for temporal media.
+We have implemented both of them:
+\begin{enumerate}
+\item \code{Medium.Plain.Binary} uses binary constructors \code{:+:}, \code{:=:}
+\item \code{Medium.Plain.List} uses List constructors \code{Serial}, \code{Parallel}
+\end{enumerate}
+
+Both of these modules provide
+the functions \code{foldBinFlat} and \code{foldListFlat}
+which apply binary functions or list functions, respectively, to \code{Medium.T}.
+Import your prefered module to \code{Medium}.
+
+Each of these data structures has its advantages:
+
+\code{Medium.Binary.T}
+\begin{itemize}
+\item There is only one way to represent a zero object,
+which must be a single media primitive (\code{Prim}).
+\item You need only a few constructors for
+serial and parallel compositions.
+\end{itemize}
+
+\code{Medium.List.T}
+\begin{itemize}
+\item
+Zero objects can be represented without a particalur zero primitives.
+\item
+You can represent two different zero objects,
+an empty parallelism and an empty serialism.
+Both can be interpreted as limits of
+compositions of decreasing size.
+\item
+You can store music with an internal structure
+which is lost in a performance.
+E.g. a serial composition of serial compositions
+will sound identical to a flattened serial composition,
+but the separation might contain additional information.
+\end{itemize}
+
+In my (Henning's) opinion
+\code{Music.T} is for representing musical ideas
+and \code{Performance.T} is for representing the sound of a song.
+Thus it is ok and even useful if there are several ways
+to represent the same sound impression (\code{Performance.T})
+in different ways (\code{Music.T}),
+just like it is possible to write very different \LaTeX{} code
+which results in the same page graphics.
+The same style of text may have different meanings
+which can be seen only in the \LaTeX{} source code.
+Analogously music can be structured more detailed than one can hear.
+
+\subparagraph*{Algebraic structure}
+
+The type \code{Medium.T} almost forms an algebraic ring
+where \code{=:=} is like a sum (commutative) and
+\code{+:+} is like a product (non-commutative).
+Unfortunately \code{Medium.T} is not really a ring:
+There are no inverse elements with respect to addition (\code{=:=}).
+Further \code{=:=} is not distributive with respect to \code{+:+}
+because \code{x} is different from \code{x =:= x}.
+There is also a problem if the durations
+of the parallel music objects differ.
+I.e. if \code{dur y /= dur z}
+then \code{x +:+ (y =:= z)} is different from
+\code{(x +:+ y) =:= (x +:+ z)}
+even if \code{x  ==  x =:= x} holds.
+So it is probably better not to make \code{Medium.T}
+an instance of a \code{Ring} type class.
+(In Prelude 98 the class \code{Num} is quite a \code{Ring} type class.)
+
+\paragraph*{Relative times in \code{Performance.T}}
+
+\seclabel{discussion:performance-reltime}
+
+Absolute times for events disallow infinite streams of music.
+The time information becomes more and more inaccurate
+and finally there is an overflow or no change in time.
+Relative times make synchronization difficult,
+especially many small time differences are critical.
+But since the \code{Music.T} is inherently based on time differences
+one cannot get rid of sum rounding errors.
+The problem can only be weakened by more precise floating point formats.
+
+
+\paragraph*{Type variable for time and dynamics in \code{Performance.T}}
+
+In the original design of Haskore
+\type{Float} was the only fractional type
+used for time and volume measures in \type{Performance.T}.
+This is good with respect to efficiency.
+But rounding errors make it almost impossible
+to test literal equivalence (\secref{equivalence})
+between different music expressions.
+In order to match both applications
+I introduced type variables \type{time} and \type{dyn}
+which is now floating all around.
+It also needs some explicit type hints in some cases
+where the performance is only an interim step.
+In future \type{Music.T} itself might get a \type{time} type parameter.
+We should certainly declare types for every-day use
+such as \type{CommonMusic.T} which instantiates \type{Music.T}
+with \type{Double} or so.
+
+
+\paragraph*{Unification of Rests and Notes}
+
+Since rests and notes share the property of the duration,
+the constructor \code{Music.Atom} is used
+which handles the duration and the particalur music primitive,
+namely Rest and Note.
+All functions concerning duration (\code{dur}, \code{cut})
+don't need to interpret the musical primitive.
+
+\paragraph*{Pitch}
+
+\seclabel{discussion:pitch}
+
+With the definition \code{Pitch = (Octave, PitchClass)}
+(swapped order with respect to original Haskore)
+the order on \code{Pitch} equals the order on pitches.
+Functions like \code{o0}, \code{o1}, \code{o2} etc. may support this order
+for short style functional note definitions.
+It should be e.g. \code{o0 g == g 0}.
+Alternatively one can put this into a duration function
+like \code{qn'}, \code{en'}, etc.
+Then it must hold e.g. \code{qn' 0 g == g 0 qn}
+
+The problem is that the range of notes
+of the enumeration \code{PitchClass} overlaps
+with notes from neighbouring octaves.
+Overlapping \code{PitchClass}es,
+  e.g. \code{(0,Bs) < (1,Cf)} although \code{absPitch (0,Bs) > absPitch (1,Cf)}
+
+The musical naming of notes is a bit unlogical.
+The range is not from A to G but from C to B.
+Further on there are two octaves with note names without indices
+(e.g. $A$ and $a$).
+Both octaves are candidates for a ``zero'' octave.
+We define that octave $0$ is the one which contains $a$.
+
+
+\paragraph*{Absolute pitch}
+
+Find a definition for the absolute pitch
+that will be commonly used for MIDI, CSound, and Signal output.
+
+Yamaha-SY35 manual says:
+\begin{itemize}
+\item Note \$00 - (-2,C)
+\item Note \$7F - ( 8,G)
+\end{itemize}
+But which A is 440 Hz?
+
+By playing around with the Multi key range
+I found out that the keyboard ranges from (1,C) to (6,C) (in MIDI terms).
+The frequencies of the instruments played at the same note are not equal. :-(
+Many of them have (3,A) (MIDI) = 440 Hz,
+but some are an octave below, some are an octave above.
+In CSound it was (8,A) = 440 Hz in original Haskore.
+Very confusing.
+
+
+\paragraph*{Volume vs. Velocity}
+
+MIDI distinguishes Volume and Velocity.
+Volume is related to the physical amplitude,
+i.e. if we want to change the Volume of a sound
+we simply amplify the sound by a constant factor.
+In contrast to that Velocity means the speed
+with which a key is pressed or released.
+This is most oftenly interpreted as the force
+with which an instrument is played.
+This distinction is very sensible
+and is reflected in \code{Music.T}.
+Velocity is inherently related
+to the beginning and the end of a note,
+whereas the Volume can be changed everywhere.
+All phrases related to dynamics are mapped
+to velocities and not to volumes,
+since one cannot change the volume of natural instruments
+without changing the force to play them
+(and thus changing their timbre).
+The control of Volume is to be added later,
+together with controllers like pitch bender, frequency modulation and so on.
+
+
+\paragraph*{Global instrument setting vs. note attribute}
+
+In the original version of Haskore,
+there was an \code{Instr} constructor
+that set the instrument used in the enclosed piece of music.
+I found that changing an instrument by surrounding a piece of music
+with a special constructor is not very natural.
+On which parts of the piece it has an effect
+or if it has an effect at all
+depends on \code{Instr} statements within the piece of music.
+To assert that instruments are set once and only once
+and that setting an instrument has an effect,
+we distinguish between (instrument-less) melodies
+and music (with instrument information) now.
+In a melody we store only notes and rests,
+in a music we store an instrument for any note.
+Even more since the instrument is stored for each note
+this can be interpreted as an instrument event,
+where some instruments support note pitches
+and others not (sound effects)
+or other attributes (velocity).
+
+\paragraph*{PhraseFun}
+
+The original Haskore version used \code{PhraseFun}s
+of the type \code{Music.T -> (Performance.T, Dur)}.
+This way it was a bit cumbersome to combine different phrases.
+In principle all \code{PhraseFun}s could be of type
+ \code{(Performance.T, Dur) -> (Performance.T, Dur)}
+This would be a more clean design but lacks some efficiency
+because e.g. the Loudness can be controlled
+by changing the default velocity of the performance context.
+This is much more efficient (even more if Loudness phrases are cascaded)
+than modifying a performance afterwards.
+Now the performance is no longer generated as-is,
+but it is enclosed in a state monad,
+that manages the \type{Performance.Context}.
+The \code{PhraseFun}s are now of type
+ \code{Performance.PState -> Performance.PState}
+which is both clean and efficient.
+
+
+\paragraph*{Phrase}
+
+\seclabel{discussion:phrase}
+
+The original version of Haskore used a list of \code{PhraseAttribute}s
+for the \code{Phrase} constructor.
+Now it allows only one attribute
+in order to make the order of application transparent to the user.
+
+%\paragraph*{InstrumentMap}
+
+%\seclabel{discussion:user-patch-map}
+
+%The current implementation of \code{InstrumentMap.T}
+
+
+
+\paragraph*{Type of \code{Music.Dur}}
+
+\seclabel{discussion:dur}
+
+Durations are represented as rational numbers;
+specifically, as ratios of two Haskell \code{Integer} values.
+Previous versions of Haskore used floating-point numbers,
+but rational numbers are more precise
+and allow quick-checking of music composition properties.

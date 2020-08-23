@@ -1,0 +1,257 @@
+% For DVIWindo:
+\documentclass[11pt,fleqn]{article}
+
+\usepackage{comment}
+\usepackage{doc}   % .ind (index) files use macros like \pfill, \scan@allowedfalse
+\usepackage{makeidx}
+\makeindex
+
+\usepackage{color}
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes}
+
+\usepackage{graphicx}
+\graphicspath{{.}{Pics/}}
+
+\usepackage{ifpdf}
+\ifx\pdfoutput\undefined
+   \pdffalse
+\else
+   \pdfoutput=1
+   \pdftrue
+\fi
+
+\definecolor{brown}{rgb}{0.7,0.2,0}
+\definecolor{darkgreen}{rgb}{0,0.6,0.1}
+\definecolor{darkgrey}{rgb}{0.4,0.4,0.4}
+\definecolor{lightgrey}{rgb}{0.95,0.95,0.95}
+
+
+\usepackage{times}
+\usepackage[T1]{fontenc}
+\usepackage{listings}
+\usepackage{amsbsy} % \poor man's bold \pmb
+
+%   keywordstyle=\pmb,
+%   keywordstyle=\color{brown},
+
+\lstset{%
+   language=Haskell,
+   frame=single,
+   framerule=1pt,
+   showstringspaces=false,
+   basicstyle=\footnotesize\ttfamily,
+   keywordstyle=\textbf,
+   commentstyle=\highlightcomment,
+   backgroundcolor=\color{lightgrey}
+}
+
+
+
+\newcommand\highlightcomment[1]{\textsl{\color{darkgrey}#1}}
+\lstnewenvironment{haskelllisting}
+   {\lstset{language=Haskell,gobble=2,firstline=2}}{}
+\lstnewenvironment{haskellblock}
+   {\mbox{}\\\lstset{language=Haskell}}{}
+
+
+\ifpdf
+%% pdflatex: *.tex -> *.pdf
+  \usepackage[pdftex,
+    colorlinks=true,
+    urlcolor=blue,
+    linkcolor=brown,
+    citecolor=darkgreen,
+    pdfstartview=FitH,
+    bookmarks,
+    pdftitle={Haskore Music Tutorial},
+    pdfsubject={Haskore -- Music composition DSL for Haskell},
+    pdfkeywords={Haskell, DSL, Functional Programming},
+    pdfauthor={Paul Hudak}
+    ]{hyperref}
+  \pdfimageresolution=288
+  \pdfcompresslevel=9
+  \usepackage{thumbpdf}
+\else
+  \usepackage[
+    colorlinks=true,
+    urlcolor=blue,
+    linkcolor=brown
+  ]{hyperref}
+\fi
+
+
+
+% Old Latex:
+% \documentstyle[epsf,11pt]{article}
+%
+%\input texnansi
+%\input lcdlatex.tex
+%\input epsfsafe.tex
+
+\textheight=8.5in
+\textwidth=6.5in
+\topmargin=-.3in
+\oddsidemargin=0in
+\evensidemargin=0in
+\parskip=6pt plus2pt minus2pt
+
+% Use these for extended mode:
+\newcommand{\extended}[1]{#1}
+\newcommand{\basic}[1]{}
+
+% Use these for basic mode:
+% \newcommand{\extended}[1]{}
+% \newcommand{\basic}[1]{#1}
+
+\input{Doc/Macros}
+
+\sloppy  % prevent keywords from stitching out off the text block
+
+\begin{document}
+
+\title{Haskore Music Tutorial}
+
+\author{Paul Hudak\\
+Yale University\\
+Department of Computer Science\\
+New Haven, CT 06520\\
+\href{mailto:paul.hudak@yale.edu}{paul.hudak@yale.edu}}
+
+\date{February 14, 1997\\
+(Revised November 1998)\\
+(Revised February 2000)\\
+(Constantly mixed up in 2004 - 2007 by
+\href{mailto:haskore@henning-thielemann.de}{Henning Thielemann} :-)}
+
+\maketitle
+
+\pagebreak
+
+\tableofcontents
+
+\pagebreak
+
+% the introduction
+\input{Doc/Introduction.tex}
+
+% the structure of Haskore
+\input{Haskore.lhs}
+
+\section{Creation of Music}
+
+\subsection{Composing Music}
+
+% pitch definitions and conversions
+\input{Haskore/Basic/Pitch.lhs}
+
+% the basics
+\input{Haskore/Music.lhs}
+
+% some common interval names
+\input{Haskore/Basic/Interval.lhs}
+
+% a brief treatise on chords
+\input{Haskore/Composition/Chord.lhs}
+
+% some common scales
+\input{Haskore/Basic/Scale.lhs}
+
+% tempo handling
+\input{Haskore/Basic/Tempo.lhs}
+
+% all about performance and players
+\input{Haskore/Performance.lhs}
+
+% moved to Performance.lhs
+%\input{Equivalence.tex}
+\input{Haskore/Performance/Player.lhs}
+
+\input{Haskore/Performance/Default.lhs}
+
+\input{Haskore/Performance/Fancy.lhs}
+
+\section{Interfaces to other musical software}
+
+% all about performance and players
+\input{Haskore/Performance/BackEnd.lhs}
+
+% translating a performance into Midi
+\basic{\input{Haskore/Interface/BasicMIDI/Write.lhs}}
+\extended{\input{Haskore/Interface/MIDI/Write.lhs}}
+\input{Haskore/Interface/MIDI/InstrumentMap.lhs}
+
+% the MidiFile datatype
+\basic{\input{Haskore/Interface/BasicMIDI/File.lhs}}
+% \extended{\input{Haskore/Interface/MIDI/File.lhs}}
+
+For a description of the MIDI file type
+and its loading and saving to disk, see the \texttt{midi} package.
+
+% storing Midi in files
+% \input{Haskore/Interface/MIDI/Save.lhs}
+
+% loading Midi files
+% \input{Haskore/Interface/MIDI/Load.lhs}
+
+% translating Midi to Haskore
+\input{Haskore/Interface/MIDI/Read.lhs}
+
+% table of General Midi assignments
+% \input{Haskore/Interface/MIDI/General.lhs}
+
+% CSound
+\input{Haskore/Interface/CSound.lhs}
+\input{Haskore/Interface/CSound/Tutorial.lhs}
+
+% MML
+\input{Haskore/Interface/MML.lhs}
+
+\section{Processing and Analysis}
+\input{Haskore/Process/Optimization.lhs}
+\input{Medium/Controlled/ContextFreeGrammar.lhs}
+\subsection{Markov Chains}
+Markov chains are now available in a package called \texttt{markov-chain}.
+\input{Haskore/Process/Format.lhs}
+
+% related work
+\input{Doc/Related.tex}
+
+\pagebreak
+
+\appendix
+
+\section{Helper modules}
+
+% random test routines
+\input{Haskore/Interface/MIDI/Render.lhs}
+
+% utility functions
+\input{Haskore/General/Utility.lhs}
+
+\section{Examples}
+% random examples
+\input{Haskore/Example/Miscellaneous.lhs}
+
+% Chick Corea's Child Song 6
+\input{Haskore/Example/ChildSong6.lhs}
+
+% some self-similar (fractal) music
+\input{Haskore/Example/SelfSim.lhs}
+
+% simulating a guitar
+\input{Haskore/Example/Guitar.lhs}
+
+% discussion about design decisions
+\input{Doc/Discussion}
+
+\pagebreak
+
+\bibliographystyle{alpha}
+\bibliography{src/Doc/old}
+
+\pagebreak
+
+\printindex
+
+\end{document}

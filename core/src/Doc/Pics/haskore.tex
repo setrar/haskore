@@ -1,0 +1,133 @@
+\begin{tikzpicture}[
+      solid/.style={rectangle,
+                    draw,
+                    thick,
+                    minimum height=1cm,
+                    text width=3cm,
+                    text badly centered},
+      clear/.style={rectangle,
+                    minimum height=0.5cm,
+                    text width=3cm,
+                    text badly centered},
+      broken/.style={rectangle,
+                     draw,
+                     dashed,
+                     minimum height=1cm,
+                     text width=3cm,
+                     text badly centered},
+      dashy/.style={ellipse,
+                     draw,
+                     dashed,
+                     minimum height=1.8cm,
+                     text width=3cm,
+                     text badly centered}
+    ]
+
+    %% Haskore, on top
+
+    \draw (5.25,0)
+          node[solid] 
+          (haskore)
+          { \textbf{Haskore} };
+    \draw (5.25,0)
+          node[dashy]
+          { };
+
+    %% Second row, translators
+    \draw (0,-2)
+          node[solid]
+          (hsk2mid)
+          { \small Haskore~$\rightarrow$~MIDI \\ Translator };
+    \draw (3.5,-2)
+          node[solid]
+          (hsk2csn)
+          { \small Haskore~$\rightarrow$~CSound \\ Translator};
+    \draw (7.0,-2)
+          node[solid]
+          (hsk2mkt)
+          { \small Haskore~$\rightarrow$~MusicKit Translator};
+    \draw (10.5,-2)
+          node[solid]
+          (hsk2cmn)
+          { \small Haskore~$\rightarrow$~Notation Translator }; 
+
+    \draw (0,-3.25)
+          node[clear]
+          (midifile)
+          { \small Standard MIDI~File };
+    \draw (3.5,-3.25)
+          node[clear]
+          (scorefile)
+          { \small CSound Score File };
+    \draw (7.0,-3.25)
+          node[clear]
+          (mkitfile)
+          { \small MusicKit ScoreFile };
+    \draw (10.5,-3.25)
+          node[clear]
+          (cmncode)
+          { \small CMN Code };
+
+    %% Third row, helpers
+    \draw (0,-4.5)
+          node[solid]
+          (midiplay)
+          { \small MIDI File Player };
+    \draw (3.5,-4.5)
+          node[solid]
+          (csound)
+          { \small CSound };
+    \draw (7.0,-4.5)
+          node[solid]
+          (musickit)
+          { \small MusicKit };
+    \draw (10.5,-4.5)
+          node[solid]
+          (cmn)
+          { \small CMN }; 
+
+    \draw (0,-5.75)
+          node[clear]
+          (midi)
+          { \small MIDI };
+    \draw (3.5,-5.75)
+          node[clear]
+          (sndfile)
+          { \small \texttt{.snd} File };
+    \draw (10.5,-5.75)
+          node[clear]
+          (notated)
+          { \small Notated score };
+
+    %% Last row, results
+    \draw (0,-7)
+          node[broken]
+          (instruments)
+          { \small MIDI Instruments };
+    \draw (3.5,-7)
+          node[solid]
+          (snd)
+          { \small Sound File Player };
+
+    \draw [very thick,->] (haskore)       to (hsk2mid.north);
+    \draw [very thick,->] (haskore)       to (hsk2csn.north);
+    \draw [very thick,->] (haskore)       to (hsk2mkt.north);
+    \draw [very thick,->] (haskore)       to (hsk2cmn.north);
+
+    \draw [very thick,-]  (hsk2mid.south) to (midifile.north);
+    \draw [very thick,-]  (hsk2csn.south) to (scorefile.north);
+    \draw [very thick,-]  (hsk2mkt.south) to (mkitfile.north);
+    \draw [very thick,-]  (hsk2cmn.south) to (cmncode.north);
+
+    \draw [very thick,->] (midifile.south) to (midiplay.north);
+    \draw [very thick,->] (scorefile.south) to (csound.north);
+    \draw [very thick,->] (mkitfile.south) to (musickit.north);
+    \draw [very thick,->] (cmncode.south) to (cmn.north);
+
+    \draw [very thick,-]  (midiplay.south) to (midi.north);
+    \draw [very thick,-]  (csound.south) to (sndfile.north);
+    \draw [very thick,->] (cmn.south) to (notated.north);
+
+    \draw [very thick,->] (midi.south) to (instruments.north);
+    \draw [very thick,->] (sndfile.south) to (snd.north);
+\end{tikzpicture}

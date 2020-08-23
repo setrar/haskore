@@ -1,0 +1,690 @@
+Since Utility.divide et.al. are only used for durations,
+we should move them to Duration and adapt them to the according types.
+   Is 'divide' often followed by fromInteger?
+
+Order of constructors in Medium and its catamorphisms (fold)
+   Which order is best for partial application? Check usages.
+
+Medium with duration -> efficient reverse
+partition, filter (adapt from AutoTrack?)
+What is the intention of 'playNote' ?
+Duration labeled music would simplify conversion to Performance
+Problem: Music.dur cannot compute the duration of ritardando et.al.
+   Is it enough to compute the duration of an effect
+   from the duration of the enclosed part of music,
+   or must the effect know the structure of the affected part of music?
+   What about 'take' et.al.?
+   Shall 'reverse' reverse effects, too?
+   Turn ritardando into accelerando and vice versa?
+
+
+Large ToDo:
+
+* Component music
+
+It seems that all features I like require a more fundamental rewrite.
+
+We need to customize
+ - the general note attributes
+ - the instrument specific note attributes
+ - the instrument specific adjustments (newly introduced)
+ - the controllers
+
+Melody, Music, Performance would all be carried in the Medium structure
+with varying details in the nodes.
+
+There are attributes like
+ - pitch
+ - velocity
+ - duration
+that can be controlled by the above parts,
+but more attributes can be added.
+They interact the following way, demonstrated for the pitch:
+   Each note has a pitch.
+   The pitch can be altered locally by the Trill controller.
+   The pitch offset can be altered globally by the Transpose controller,
+      that is, the linearized music (performance) is transposed.
+   After all controllers took place, the instrument may apply a transposition,
+      maybe because its octave does not fit, or it is detuned in another way
+
+There are several types of controllers:
+ - controllers that can be expressed in terms of music
+      like dynamics (alters velocity offset), crescendo (alters performance),
+      trill (inserts new notes),
+ - back-end controllers: their effect can only be expressed in the back-end
+      MIDI controllers like filter parameters, main volume, frequency modulation
+      Synthesizer effects like reverb, filter sweep
+
+Back-end controller must be necessarily performed
+after the Time and Music controllers are applied and removed from the structure.
+Maybe back-end controllers should enclose the inner music atomically,
+presenting its inner as one immutable musical object.
+
+In order to have a clear concept
+of how to interleave 'take', 'drop' and 'reverse' with 'ritardando' et.al.
+we should implement 'take' et.al. also as controllers.
+
+We should generalize the Control type in controlled medium
+to a type constructor, which has the medium type as parameter.
+This way, a controller could contain multiple sub-musics.
+Cf. synthesizer/SwanLake.hs where one melody is used to filter the other one.
+
+We should be aware,
+that the formerly existing performance context
+was only a way to speedup heavily nested controllers,
+that could also be computed immediately.
+It interfers in an unpredictable way with controllers
+that expect certain absolute pitches or durations.
+Maybe we should not do that optimization by default
+but think about optimizations once this problem really occurs.
+Optimization could be done by a preprocessing step
+which replaces relative controllers by absolute ones,
+if they are not interleaved with controllers that expect specific pitch or time values.
+
+Common note attributes:
+ - pitch (missing for drums, maybe replaced by frequency for microtonal music)
+ - velocity (missing for effects)
+ - duration (this determines the distance between previous and successive event)
+ - prestart (time difference the noise starts before the scheduled time)
+ - poststop (time difference the noise plays after the scheduled duration)
+     - the latter two parameters allow overlapping sounds
+       but require special care for doing performance lazily
+       (you have to provide a latency for implementing this)
+
+A note may actually be a chord.
+Its linearization is a parallel composition of the chord notes.
+Using a different linearization (interpretation)
+it could also be turned into a melody.
+
+A note may be a syllable for speech synthesis.
+
+A note can contain time or velocity dependent data
+like information when a frequency modulation shall start.
+In order to render it, it must either know the current tempo, dynamics, and transposition,
+or it exposes its time, dynamics and pitch information
+to let the controllers alter them.
+
+We drop the player concept since different interpretations
+can be provided by different performance generators
+(aka linearization methods).
+
+
+* Modulation
+
+The effect of Control structures like Tempo and Transpose
+could also be expressed by transforming the Music.T.
+The disadvantage is that the change can't be inspected later.
+This is necessary for pretty printing
+(say processed or generated) music,
+or for creating Lilypond output.
+Multiple nested transforms are also less efficient
+than how 'Performance.fromMusic' processes these control structures
+with the Reader monad.
+
+But there are also kinds of modulations
+like Volume, Frequency Modulation, Pitch Bender, CutOff, Resonance, Reverb,
+which affect sounds that are already playing.
+In fact something equivalent to MIDI controllers is required.
+But it shall also work for SuperCollider and Haskell-Synthesizer.
+Consider a filter sweep:
+You partition the music into all notes of a pad sound,
+and the rest of the music.
+Then run the pad track within a filter sweep controller.
+Another interesting effect is slowing down the signal,
+meaning slower music playing and lower frequencies.
+So there are two substantially different kind of controllers:
+Those which work on the performance data
+and are thus back-end independent,
+and the other ones, which work on the back-end data.
+
+A new constructor for Music.Control, say
+   Modulate a Music.T
+would do it.
+
+Things like pitch bender are especially useful on a per note basis.
+This could be achieved by an extended or alternative NoteAttribute.
+
+To stay independent from the preferred sampling rate of the back-end
+the modulator may be specified by a function of type (Float -> [Float])
+which returns a list of modulation values sampled at the specified rate.
+This can be some mathematical function or
+a function which includes the interpolation of a sampled list.
+Even better: (Float -> Float -> [Float]),
+where parameters are the sampling rate and the fractional starting time.
+
+This leads to following problems:
+
+How do modulators interfer with each other?
+If Volumes are scaled logarithmically
+it is sensible to add the value of nested Volume modulations.
+I.e.
+   Modulate (Volume x) (Modulate (Volume y) m) ==
+      Modulate (Volume (x+y)) m
+Can this be done for each modulator?
+How can 'perform' keep track of the values of all modulators
+that are in effect when descending into a Music tree?
+
+The Performance.T must be extended by a second type of event.
+This special event changes a sound attribute over the time.
+How can this event specify to what events it applies?
+By channel numbers? This would be straight-forward for MIDI streams
+but what about software synthesizers?
+SuperCollider works also with channels and needs some channel management.
+Alternatively each modulator could manage the list of events it affects.
+This means that modulator m0 can't apply to the events es0 and es1,
+if modulator m1 controls both es1 and es2.
+
+** Local effects
+
+The controller constructor must distinguish between two types of controllers:
+1. The controllers whose effect can be expressed in terms of the Music structure,
+like changing tempo, transposition, velocities, all kind of phrases.
+2. Controllers (modulators) which can only be processed by the back-end.
+
+They could be processed as follows:
+In a first pass the phrases are applied to the music,
+generating a music containing only back-end controllers.
+This is more complicated than applying phrases to the linearized performance,
+but I cannot see a different way of combining both kinds of controllers
+in a generic way.
+In the second phase the back-end music is converted to a linear performance,
+aka MIDI file, CSound score, SuperCollider message stream.
+Only the Haskell synthesizer is different,
+because a linearized performance isn't appropriate for that back-end.
+The Haskell synthesizer would just mix together the sounds
+as they arise in the hierarchical Music data type.
+
+The sketched separation of processing would do the expected thing
+in following examples:
+
+1. ritardando (replicate 10 (modulate lowpassWow (chord [a,c,e]))
+2. ritardando (melody =:= accompaniment)
+
+However, it would be
+   ritardando . modulate filterSweep  ==  modulate filterSweep . ritardando
+
+That is, the speed of the filter sweep is not influenced by the ritardando.
+Is this wanted?
+In general you cannot influence the speed of the effect
+e.g. if the controlling LFO is hard-coded in the effect.
+But maybe it should be encouraged to disclose time dependent control
+to the player, in order to apply time control to such modulations.
+E.g. the Modulate constructor could be equipped with a time stamped list.
+
+
+The performance context must be extendable
+as the number of note attributes is extendable.
+Currently there are three parameters that are managed by standard Music:
+1. duration/tempo
+2. pitch/transposition
+3. velocity/dynamics
+
+The performance context can no longer be a fixed record type
+but the access to common parameters like Transposition, Dynamics, Tempo
+could be handled in a general way by
+type classes for Transposition, Dynamics, Tempo context.
+
+I do not have an idea for new parameters,
+but at least 'pitch' could differ from the well-tempered scale.
+
+Pairs of phrases for different parameters may commute, e.g.
+  changeTempo r . transpose p == transpose p . changeTempo r
+But in general it will not hold, e.g.
+  ritardando . crescendo /= crescendo . ritardando
+because the increase of velocity depends on the time.
+
+How is the following example currently handled?
+
+   ritardando (musicA +:+ changeTempo r musicB +:+ musicC)
+
+is each note of musicB affected by ritardando, or only the musicB as such?
+Since ritardando is applied to the performance,
+each note of musicB is altered by ritardando.
+Is this the same behaviour, as if changeTempo would shorten notes,
+instead of changing the context?
+I think it is identical, but faster for cascaded changeTempos.
+
+It seems to be necessary to expand all phrases at the same time,
+it won't be possible to split this into three phases.
+
+Each controller must only change its own parameter
+but may depend on the parts of the context:
+   context -> tempo
+   context -> transposition
+   context -> dynamics
+
+Then the new context is created by a function
+(probably simply a constructor) of type
+   (tempo, transposition, dynamics) -> context
+
+
+Since many context information are ignored on sequencing PerformanceStates,
+a ReaderMonad will be more appropriate than a State Monad.
+Of Context, only the 'start' value is updated,
+all other values are thrown away on binding.
+
+
+When flattening temporal phrases,
+we need distinct durations: structural durations and note durations.
+Each part of music has a structural duration,
+each note has additionally a note duration.
+The structural duration of a note determines the delay
+between its own start and the beginning of the next note.
+The note duration determines how low the note is played.
+Legato means, that the note duration is longer than the structural duration.
+Ritardando affects both note and structural duration.
+
+
+
+** Volume
+
+People seems to agree that MIDI volume is on a logarithmic scale:
+
+http://groups.google.de/groups?hl=de&lr=&ie=UTF-8&threadm=34CA9768.FA7BDD8D%40fox.uq.net.au&rnum=2&prev=/groups%3Fq%3Dvolume%2Blogarithmic%2Bgroup:comp.music.midi%26hl%3Dde%26lr%3D%26ie%3DUTF-8%26selm%3D34CA9768.FA7BDD8D%2540fox.uq.net.au%26rnum%3D2
+
+http://groups.google.de/groups?hl=de&lr=&ie=UTF-8&threadm=3A6E12CB.F4176FD2%40eatel.net&rnum=3&prev=/groups%3Fq%3Dvolume%2Blogarithmic%2Bgroup:comp.music.midi%26hl%3Dde%26lr%3D%26ie%3DUTF-8%26selm%3D3A6E12CB.F4176FD2%2540eatel.net%26rnum%3D3
+
+16 ticks correspond to doubled amplitude on a Yamaha SY-35.
+One could argue that this definition is based on logarithm with basis two.
+Volume 0 means silence, which corresponds to -Infinity on the logarithmic scale.
+
+Volume is different from the Velocity!
+Velocity ranges from $00 to $7F, defaults to $40.
+
+** Control
+
+The control constructor can help managing an accumulator record
+for the values Tempo, Transposition, Player which is necessary for a performance.
+Can we assign controllers to parts of the performance context?
+What about custom controllers like frequency modulation etc.?
+
+Is it better to move the Control constructor to Medium.T?
+Algorithms that have to recourse into all branches of a medium
+would be simplified. (Optimization, StructureAnalysis)
+Proofs about the algebraic properties of Medium would be complicated.
+Medium would need two type parameters. -
+Is it still possible to have a Functor instance? Yes!
+Is it better to re-define functions like 'fmap' in terms of Music.T?
+
+
+
+ToDo:
+
+* Performance.PState as Applicative + Alternative
+
+In the conversion from Music A+:+B to Performance,
+the conversion of B does not depend on the outcome of A's conversion,
+except the tempo and transposition state,
+which is hidden in the Context.
+Thus we do not need Monad (or even MonadPlus for parallel composition) instance,
+but should be fine with Applicative and Alternative.
+I feel that even these are to much,
+because we do not need 'pure'.
+We even do not need know the context for conversion
+of neighbouring parts of the music,
+we only need to know the context of the (parent) super node.
+Thus 'sequence' is really too much.
+
+* NewResolution with -O2
+
+with option -O2 compilation of NewResolution needs too much heap
+and thus it ends up in busy swapping
+
+* Pitch type and Random class
+
+Turn Pitch.T into a distinct type and make it an instance of Random.
+This is difficult - how shall tones like Cs and Df be handled?
+If we use a uniform distribution over all pitch classes,
+then these tones are over-represented.
+
+* Instrument vs. Melody instrument
+
+What are the best english terms for distinction of drums and melody instruments,
+and what is a good summarizing term?
+Currently I use 'Sound' as summarizing term,
+and 'Drum' and 'Instrument' for specialization.
+
+* Chord properties
+
+In the Chord module there are some properties that could be QuickChecked.
+
+* replace Shell.launch by System.Process.runInteractiveProcess
+
+For starting Shell commands interactively
+we do no longer need the Shell-Haskell package,
+because this functionality is now available in System.Process.
+
+* infinite MIDI
+
+MIDI files have length information in the chunk heads
+which can not be given for infinite tracks
+and tracks that are generated on the fly from MIDI events.
+Is there a length value that means "track is played until EndOfTrack"?
+Can this be solved only by sending MIDI messages through some network?
+Can the MidiFile.T data structure be re-used
+as an interim data structure?
+I know of two projects for wrappers to JACK.
+JACK might be a good target
+for exchanging MIDI messages with other programs and devices.
+
+* MIDI read and write using ByteString
+
+* type variables
+
+Turn Time, Volume into type variables.
+I should wait with this until NumericPrelude reaches some stability.
+A Time and Volume class could bundle the requirements we need
+for volume and time values.
+Alternatively I can introduce type classes Volume and Time
+which collect the inheritances that are necessary for types
+that shall serve as Volume or as Time.
+
+* tidy TeX
+
+check if all references to appendix still
+refer to an appendix
+make graphics with functionalMetaPost,
+  e.g. Pics/haskore.eps
+
+Specialize \tt to \module, \function, \type, \expression, or \code
+
+* Modularity
+
+** MIDI
+
+Is it better to introduce MIDI in the module MidiFile
+instead of in the module WriteMidi?
+
+** Modules: Player, PerformanceContext
+
+Separate Player module from Performance.
+Separate PerformanceContext module from Performance.
+I've done it as far as possible,
+but unfortunately both GHC and Hugs don't support cyclic imports.
+
+
+* UserPatchMap (MIDI.InstrumentMap)
+
+UserPatchMap maps a Music.IName to a GeneralMidi name and a channel.
+Isn't it better to have two maps:
+  map from Music.IName to a MIDI program number
+  map from Music.IName to a MIDI channel
+The first one must be provided by the user,
+since the used MIDI synthesizer may have some exotic instruments (programs)
+which are by far not covered by GeneralMIDI.
+The second one could be generated by some auxiliary functions
+and need not be provided manually.
+The problem is that GeneralMidi interprets events as Drums
+depending on the channel (9) instead of the program number,
+which in my opinion is rather broken.
+ReadMidi.toMusic is currently to much oriented at GeneralMidi,
+it must be possible to specify a (MidiEvent.Program -> Music.IName) map.
+
+* UserPatchMap transposition
+
+The user patch map should contain a transposition
+because many MIDI instruments are not adjusted to the proper octave.
+
+* MIDI.InstrumentMap with parameters
+
+MIDI.InstrumentMap should support instrument parameters
+like SuperCollider and CSound.
+However MIDI controllers affect channels not specific tones.
+Shall controller effects be in a time stamped list? I say yes.
+However then this should be also supported for SuperCollider.
+Also respect controllers on conversion from MIDI file to MIDI music.
+A note may then generate multiple MIDI events.
+
+* MIDI notes with overlap
+
+Two notes of the same pitch which overlap cannot be handled by MIDI.
+
+<----------------->
+               <-------------->
+
+The end of the first note terminates the second one, which is not intended.
+We should add a clipping to MIDI.Write.addNote,
+such that the above is actually output as
+
+<------------->
+               <-------------->
+
+This problem occurs in Haskore.Example.Guitar.legatoSong
+
+
+
+To think over:
+
+* Microtonal music
+
+How to support microtonal music and other scales?
+One problem is, that the Tranpose constructor cannot handle fractional transposition.
+What about even more exotic scales, like 53 tones per frequency doubling,
+or 12 tones per frequency tripling.
+Maybe this could be solved by a revised Controller handling.
+
+* Structure analysis
+
+By considering duration ratios and pitch differences of adjacent notes
+one can also recover changes in tempo and transpositions.
+
+* converting Events to Music
+
+Currently Performance.BackEnd.toMusic needs very much parallel composition.
+It should try harder to compose notes sequentially.
+E.g. a list of currently played and recently finished notes is maintained,
+for each note it is stored when it will end
+or how much time has gone since its end, respectively.
+A set of subsequent notes with the same starting time
+is now optimally matched
+(Optimally with respect to which criterion? Pitch difference?)
+to the already finished notes.
+
+Unfortunately SetTempo events from a MIDI stream
+can not be stored in a Performance.T.
+That is this information cannot be used in Music reconstruction.
+However, SetTempo is also not used in Haskore generated MIDI files.
+
+* CSound
+
+What does velocity mean to CSound?
+The instruments must interpret it.
+A simple interpretation is of course mapping velocity to amplitude.
+
+* CSound NameMap as FiniteMap
+
+One could implement the NameMap using FiniteMap.
+But since this is related to instruments,
+a future design of instrument settings
+may not need this map anymore.
+
+
+* SuperCollider.SoundMap
+
+Split SoundMap module into maps with various levels of information,
+that is instruments without parameters,
+instruments with parameters,
+instruments with parameters and special channels.
+
+Make SoundMap of MIDI, CSound, SuperCollider more uniform.
+
+Switch order of (parameter-list, sound-id)
+in SuperCollider.InstrumentMap.ToSound and CSound.InstrumentMap.ToSound?
+For partial application the current ordering is right,
+for Ord instances it is wrong.
+
+* SuperCollider.Note
+
+Make Note.fromRhyNoteNoParam the default (rename to Note.fromRhyNote),
+but this would be inconsistent with fromMelodyNullAttr.
+
+* SuperCollider: global effects
+
+Allow to apply effects that are running constantly for each instrument.
+To this end, we could install a global UGen
+which listens to several output buffers.
+Each output buffer captures all tones of one instrument.
+
+We should wrap this in a (State Channel) monad
+in order to be able to combine this with other SuperCollider usages.
+
+* SuperCollider: local effects
+
+It would be nice to restrict effects to musical parts
+with respect to time and polyphony.
+This is similar to what we want to achieve with MIDI controllers.
+Is the linear performance data structure still appropriate for this kind of music
+or do we need some hierarchical performance?
+How would we do this for the pure Haskell synthesizer back-end?
+How does this interfer with overlapping and prefetched sounds?
+
+* SuperCollider: duration
+
+Make duration a parameter of Instrument UGens.
+This way the sounds can be adapted to the tone duration.
+Also apply this to CSound modules.
+
+* Overlap and prefetch
+
+In order to separate music arrangement and particular sounds
+we need to support the following situations.
+1. Play instruments earlier than their official start time,
+   if they need time to fade in.
+2. Let instruments play longer than their official duration
+   in order to allow release phases.
+These effects should be bound to instruments,
+not to articulations like legato.
+
+* absolute time stamped list
+
+In order to achieve the above goal,
+we should implement a time list with absolute times.
+In this list we can test implementing the displacement of events.
+
+* (Ord note) constraint
+
+An Ord constraint for the note data types is very odd.
+It's only use is to make the generated performance unique.
+Shall we introduce a different type class
+which makes this circumstance more visible?
+
+* DrumParameters and InstrumentParameters in Schedule.* modules
+
+They are independently defined in both modules in order to ensure,
+that instruments installed with output on certain channels
+is only used with the playing routine that is prepared for this.
+(Especially in Life, both modules are imported and
+the risk is high, to install an instrument for channel separated playing
+but using it for playing on the same channel.)
+However the types are almost identical,
+so the question arises, if these types can be merged.
+For Schedule.Install and Schedule.Channel this distinction is not necessary,
+because the playing routines depend on the particular Environment.
+However, for the Play.Life module, this is no longer true.
+
+* Lilypond
+
+Back-end for note sheets expressed in Lilypond.
+Jeffrey Lewis has something working in this area.
+
+* NotateFun
+
+Is a NotateFun still necessary for notation
+or does the LilyPond notation work without it?
+
+* More efficiency for nested Music
+
+Music.reverse re-computes the duration of sub-structures.
+Performance.fromMusic must compute the duration of sub-structures manually.
+It would be nice if it would be possible
+to use a temporary Medium.T data structure
+which can also store the duration of each sub-structure.
+I have written a module with an example structure, called 'labelled medium'.
+
+* drop
+
+Provide a variant of Music.drop,
+which drops all notes that cannot be played from the beginning.
+This seems to me to be the more natural variant,
+since 'take' already keeps such notes,
+and thus (take d m +:+ drop d m) does not replicate the split note.
+
+* filter, partition
+
+Provide Music.filter and Music.partition,
+which replace notes by rests, depending on a given criterion.
+
+* Scale and Chord
+
+More consistency between these modules.
+
+* Cabal
+
+Split package into smaller ones.
+
+* Speech processing
+
+Using the speech processing support for SuperCollider
+it should be possible to generate singing in songs
+using a special instrument type.
+
+* Interactive input assistance
+
+Provide some IO routine which interprets the keyboard as piano keyboard
+and emits according Haskore note constructors.
+This is already implemented in SuperCollider.Life.
+It should be available for all back-ends.
+It should also output the note length.
+
+* IDE
+
+Embed Haskore in some common development environment, say KDevelop or Eclipse.
+Immediately play the sound for the key that is pressed.
+Play music straight from the editor
+and the editor should mark the notes that are currently played.
+Treat Haskore as a new language in such an environment:
+provide special syntax highlighting,
+code templates for blank Haskore modules,
+code libraries (= music libraries),
+expansion of abbreviations,
+navigation through the musical parts and so on.
+
+Technical problems:
+It must be possible to extract the position
+of the note function calls in a source file.
+This can be arbitrarily hard.
+On the front-end the positions of the function calls must be detected.
+Maybe there are some Haskell preprocessors
+that can extend the call to notes
+by the textual position of the call.
+On the back-end the positions must be stored in the performance
+and then they must be piped somehow to the editor
+to set some marks in the text.
+
+The preprocessor can be written in Haskell using Language.Haskell.Syntax.
+The source location can be written to a 'labelled medium' data structure.
+Will it be possible to lift all musical functions to the 'labelled medium'?
+
+
+
+References:
+
+* Audio processing and Haskore, Lava, Hawk, FRP (Functional reactive programming), Yampa
+
+http://groups.google.de/groups?hl=de&lr=&ie=UTF-8&threadm=fa.cf8t0fv.k14vr4%40ifi.uio.no&rnum=9&prev=/groups%3Fq%3Dhaskore%26hl%3Dde%26lr%3D%26ie%3DUTF-8%26selm%3Dfa.cf8t0fv.k14vr4%2540ifi.uio.no%26rnum%3D9
+
+* more people interested in Haskore
+
+http://groups.google.de/groups?hl=de&lr=&ie=UTF-8&threadm=haberg-0906981953560001%40sl35.modempool.kth.se&rnum=14&prev=/groups%3Fq%3Dhaskore%26hl%3Dde%26lr%3D%26ie%3DUTF-8%26selm%3Dhaberg-0906981953560001%2540sl35.modempool.kth.se%26rnum%3D14
+
+http://groups.google.de/groups?hl=de&lr=&ie=UTF-8&threadm=remove.haberg-1408021913460001%40du139-226.ppp.su-anst.tninet.se&rnum=17&prev=/groups%3Fq%3Dhaskore%26hl%3Dde%26lr%3D%26ie%3DUTF-8%26selm%3Dremove.haberg-1408021913460001%2540du139-226.ppp.su-anst.tninet.se%26rnum%3D17
+
+* another C based music programming language
+
+http://groups.google.de/groups?hl=de&lr=&ie=UTF-8&threadm=01-08-083%40comp.compilers&rnum=18&prev=/groups%3Fq%3Dhaskore%26hl%3Dde%26lr%3D%26ie%3DUTF-8%26selm%3D01-08-083%2540comp.compilers%26rnum%3D18
+
+* Hassoal
+
+Haskell orchestra description language.
+
+http://hassoal.sourceforge.net/

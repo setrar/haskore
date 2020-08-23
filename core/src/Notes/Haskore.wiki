@@ -1,0 +1,17 @@
+[[Haskore | http://www.haskell.org/haskore/]] is a set of Haskell modules for creating music as MIDI, CSound, and Audio files.
+
+A lot of projects were initiated that use the Haskore framework or something in the spirit of Haskore. This Wiki may help to keep an overview of all projects. All maintainers of Haskore related projects are encouraged to add there project here.
+
+
+|| AuDi || Peter Steffen || [http://www.techfak.uni-bielefeld.de/ags/pi/lehre/AuDIWS02/musik/] || Course material for Algorithms and Data Structures I - A formula language for music (``Algorithmen und Datenstrukturen I - Eine Formelsprache fuer Musik'') ||
+|| AutoTrack || Stefan Ratschan || [http://www.mpi-sb.mpg.de/~ratschan/autotrack/] || A tool for creating practizing and demo tracks from chord charts.  You feed the program with a chord chart, set the desired style (jazz, bossa, etc.), tempo, key etc. and it produces a simple MIDI file containing an according bass and drum track. Includes a lot of examples. ||
+|| EDSL || Peter G. Hancock(?) || [http://haskell.cs.yale.edu/edsl/music.htm] ||  ||
+|| Emile - Eight-Bar Melody Generation in Haskell || Adam Bermingham ||  || Automatic composition based on two initial bars ||
+|| Gore || Johannes Waldmann || [http://www.informatik.uni-leipzig.de/~joe/edu/ws00/praxis/sequencer.html] || Convert a melody description in a string into the Haskore Music data structure. Thus simple melodies can be written much more condensed. ||
+|| HasChorus || Martin Schwenke || [http://meltin.net/hacks/haskell/] || A set of Haskell modules written on top of Haskore to make it easier to sequence simple, repetitive music ||
+|| Jazkore || Jean-François Paiement || [http://bigwww.epfl.ch/] || A model of melodic jazz improvisation in functional programming ||
+|| Lilypond back-end || Jeffrey R. Lewis ||  || A back-end for Haskore to produce Lilypond notation files. ||
+|| Polymorphic Temporal Media || Paul Hudak || [http://haskell.cs.yale.edu/yale/papers/polymedia/hudak-RR-1259.pdf] || An Algebraic Theory of Polymorphic Temporal Media - A generalization of Haskore Music and MDL as well as Fran and FAL animation ||
+
+----
+CategoryTools

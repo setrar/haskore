@@ -1,0 +1,43 @@
+
+\usepackage{amsthm}
+
+\swapnumbers
+%\numberwithin{definition}{section}
+\newtheorem{prop}{Proposition}
+\newtheorem{axiom}[prop]{Axiom}
+\newtheorem{theorem}[prop]{Theorem}
+\newtheorem{exercise}[prop]{Exercise}
+\theoremstyle{definition}
+\newtheorem{definition}[prop]{Definition}
+
+\newcommand{\ignore}[1]{}
+\newcommand{\out}[1]{}
+%\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\code}[1]{{\tt #1}}  % overrides italics
+\newcommand{\type}[1]{\code{#1}}
+\newcommand{\constructor}[1]{\code{#1}}
+\newcommand{\function}[1]{\code{#1}}
+\newcommand{\expression}[1]{\code{#1}}
+\newcommand{\module}[1]{module \texttt{#1}}
+
+\newcommand \keyword[1]{\emph{#1}\index{#1}}
+\newcommand \keywordref[2]{#2\index{#2} (\dfnref{#1})}
+
+\newcommand \eqnlabel[1]{\yesnumber\label{eqn:#1}}    % set tag and declare label
+\newcommand \dfnlabel[1]{\label{dfn:#1}}
+\newcommand \thmlabel[1]{\label{thm:#1}}
+\newcommand \lemlabel[1]{\label{lem:#1}}
+\newcommand \rmklabel[1]{\label{rmk:#1}}
+\newcommand \seclabel[1]{\label{sec:#1}}
+\newcommand \tablabel[1]{\label{tab:#1}}
+\newcommand \figlabel[1]{\label{fig:#1}}
+
+\newcommand \eqnref[1]{(\ref{eqn:#1})}      % reference to an equation (number surrounded by parentheses)
+\newcommand \meqnref[1]{\text{(\ref{eqn:#1})}}      % reference to an equation for use in math mode, only necessary for pdflatex
+\newcommand \dfnref[1]{Definition~\ref{dfn:#1}}
+\newcommand \thmref[1]{Theorem~\ref{thm:#1}}    % reference to a theorem
+\newcommand \lemref[1]{Lemma~\ref{lem:#1}}
+\newcommand \rmkref[1]{Remark~\ref{rmk:#1}}
+\newcommand \secref[1]{Section~\ref{sec:#1}}    % reference to a section
+\newcommand \tabref[1]{Table~\ref{tab:#1}}      % reference to a table
+\newcommand \figref[1]{Figure~\ref{fig:#1}}     % reference to a figure
