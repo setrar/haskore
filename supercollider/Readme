@@ -1,0 +1,40 @@
+We assume that we have successfully installed haskore-supercollider
+and all of its dependencies.
+Now, how do we get something to hear?
+
+When SuperCollider and JACK are available, but not currently running,
+start 'jack' with
+
+$ make jack
+
+and SuperCollider (scsynth) with
+
+$ make supercollider
+
+or both together
+
+$ make scj
+
+
+If SuperCollider server is running,
+then start Haskore (make ghci) in a new terminal:
+
+*Main> :load Haskore.Interface.SuperCollider.Example
+...
+*Haskore.Interface.SuperCollider.Example> play glissando
+...
+*Haskore.Interface.SuperCollider.Example> play chillOut
+...
+
+*Main> :load Haskore.Interface.SuperCollider.Play.Life
+...
+*Haskore.Interface.SuperCollider.Play.Life> sawPerc <- installInstr0 "saw percussion" Example.sawPercUGen
+*Haskore.Interface.SuperCollider.Play.Life> playKeyboard sawPerc
+
+Then hit some keys, terminate with CTRL-D.
+However, playing will only work as expected on a German keyboard.
+Create a string like germanKeyboard for your needs and use this instead.
+
+If you installed the package with Cabal
+a program 'song-air' is compiled which plays a nice demo song
+using Haskore and SuperCollider (scsynth must be running).

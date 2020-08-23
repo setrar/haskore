@@ -1,0 +1,19 @@
+2004-07-05
+  * Rests and Notes
+
+  Rests and Notes are the sonic atoms in a Music,
+  whereas the other constructors structure the Music.
+  Sonic atoms share the property 'duration'
+  but in the original design functions like 'perf'
+  couldn't benefit from that.
+
+2004-05-23
+  constructor 'Sequence' instead of ':+:',
+              'Parallel' instead of ':=:',
+              implemented +:+ and =:= as replacement for these constructors
+  '=:=' meant a meter change before, turned it into '=/='
+  the optimization algorithms in ReadMidi are partially wrong
+     or optimize too less or let me doubt about some the structures of Haskore
+
+2004-05-22
+  'div' instead of 'quot' for Note conversion
